@@ -184,13 +184,17 @@ class TitaniumBackupFormatter:
         if url is not None:
             file_name = 'tmp/' + str(uuid.uuid4())
             os.makedirs(os.path.dirname(file_name), exist_ok=True)
-            with urllib.request.urlopen(url) as file:
-                data = file.read()
+            try:
+                with urllib.request.urlopen(url) as file:
+                    data = file.read()
                 with open(file_name, "wb") as new_file:
                     new_file.write(data)
                     new_file.close()
                     encoded_data = base64.b64encode(open(file_name, "rb").read()).decode('utf-8')
                     os.remove(file_name)
+            except urllib.error.HTTPError:
+                print("NOTICE: Unable to download URL {}".format(url))
+                pass
         if encoded_data is None or len(encoded_data) <= 0:
             print("Error downloading or base64 encoding attachment!")
         return encoded_data
